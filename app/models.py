@@ -1,8 +1,7 @@
 # models.py
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
 
 # class CustomUserManager(UserManager):
 #     def create_user_with_profile(self, username, email, password=None, **extra_fields):
@@ -30,7 +29,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active",)
+        extra_fields.setdefault("is_active", True)
 
         if not extra_fields["is_staff"] or not extra_fields["is_superuser"]:
             raise ValueError("Superuser must have is_staff=True and is_superuser=True.")
@@ -64,13 +63,30 @@ class UserProfile(models.Model):
     # Add any additional fields for the profile
 
 
+class Author(models.Model):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
 
 
-@receiver(post_save, sender=CustomUser)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.ForeignKey("Author", on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Category)
+    description = models.TextField()
+    published_date = models.DateField()
+    cover_image = models.ImageField(upload_to='book_covers/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='books')
 
-@receiver(post_save, sender=CustomUser)
-def save_user_profile(sender, instance, **kwargs):
-    instance.userprofile.save()
+    def __str__(self):
+        return self.title

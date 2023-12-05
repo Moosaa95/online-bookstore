@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from .tasks import send_activation_email
 from django.conf import settings
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +61,44 @@ class CreateCustomUserSerializer(serializers.ModelSerializer):
         send_activation_email(
             recipient_list, subject, html_message=html_message, from_email=from_email
         )
+
+
+
+class TokenObtainPairSerializer(TokenObtainPairSerializer):
+    is_first_timer = serializers.SerializerMethodField()
+
+    def get_is_first_timer(self, obj):
+        # Retrieve the user from the token and get the is_first_timer value
+        user = self.user
+        return user.is_first_timer
+
+    @classmethod
+    def get_token(cls, user):
+        print('poppppp')
+        token = super().get_token(user)
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        token['email'] = user.email
+        # token['role'] = user.role
+        # token['is_first_timer'] = user.is_first_timer
+        # token['verified'] = user.profile.verified
+        # token['image'] = str(user.profile.image)
+
+        return token
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ['id', 'first_name', 'last_name']
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'author', 'categories', 'description', 'published_date', 'cover_image', 'created_at', 'updated_at', 'created_by']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = "__all__"

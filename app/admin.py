@@ -10,3 +10,16 @@ class CustomUserAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(Book)
+class BookAdmin(admin.ModelAdmin):
+    pass 
+
+
+@admin.register(Author)
+class AuthorAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    pass 
